@@ -1,0 +1,28 @@
+{
+  "name": "blackjack-21",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node --test tests/*.test.js",
+    "serve": "node tools/serve.mjs",
+    "e2e": "node tools/e2e.mjs",
+    "icons": "node tools/make-icons.mjs",
+    "brand": "node tools/apply-brand.mjs",
+    "vendor": "node tools/build-vendor.mjs",
+    "stamp": "node tools/stamp-sw.mjs",
+    "android:build": "node tools/build-apk.mjs"
+  },
+  "dependencies": {
+    "@capacitor/android": "^8.6.0",
+    "@capacitor/core": "^8.6.0"
+  },
+  "devDependencies": {
+    "@capacitor/cli": "^8.6.0",
+    "@fontsource/playfair-display": "^5.0.0",
+    "esbuild": "^0.25.0",
+    "firebase": "^11.0.0",
+    "firebase-tools": "^14.0.0",
+    "puppeteer-core": "^24.0.0"
+  }
+}
