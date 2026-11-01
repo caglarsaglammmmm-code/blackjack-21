@@ -210,7 +210,7 @@ export class Game {
     if (accept) {
       this.insurance = this.insuranceCost;
       this.money -= this.insurance;
-      events.push({ type: 'insurance', amount: this.insurance });
+      events.push({ type: 'insurance', amount: this.insurance, money: this.money });
     }
     return events.concat(this.afterOpening());
   }
@@ -291,7 +291,7 @@ export class Game {
     const card = this.draw();
     hand.cards.push(card);
     const events = [
-      { type: 'double', hand: this.active, bet: hand.bet },
+      { type: 'double', hand: this.active, bet: hand.bet, money: this.money },
       { type: 'card', to: 'player', hand: this.active, card, hidden: false },
     ];
     hand.done = true;
@@ -312,7 +312,7 @@ export class Game {
     hand.fromSplit = true;
     const second = newHand([moved], hand.bet, true);
     this.hands.splice(this.active + 1, 0, second);
-    const events = [{ type: 'split', hand: this.active }];
+    const events = [{ type: 'split', hand: this.active, money: this.money }];
 
     this.hands.forEach((h, index) => {
       const card = this.draw();
@@ -400,6 +400,7 @@ export class Game {
     const net = this.hands.reduce((sum, hand) => sum + hand.net, 0) + insuranceNet;
     return [{
       type: 'settle',
+      money: this.money,
       net,
       payout,
       insuranceNet,

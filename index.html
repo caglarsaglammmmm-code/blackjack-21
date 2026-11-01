@@ -1,0 +1,148 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+<title>Tam Tokatlık 21</title>
+<meta name="description" content="Arkadaşlarınla yarışılan, sanal paralı Blackjack.">
+<meta name="theme-color" content="#0b0606">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Tam Tokatlık 21">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<div id="defs"></div>
+<main id="app">
+
+  <section id="start" class="screen active">
+    <header class="hero">
+      <div class="orbit" aria-hidden="true"><i></i><i></i><i></i><i></i></div>
+      <h1 id="title"></h1>
+      <p id="tagline"></p>
+    </header>
+
+    <form id="entry" autocomplete="off">
+      <label for="name" class="eyebrow">Oyuncu adın</label>
+      <div class="entry-row">
+        <input id="name" maxlength="16" placeholder="Adını yaz" enterkeyhint="go" autocapitalize="words" spellcheck="false">
+        <button type="submit" class="btn primary" id="play">OYNA</button>
+      </div>
+      <p id="name-error" role="alert"></p>
+    </form>
+
+    <a id="apk" class="btn ghost" rel="noopener">Android'e İndir (APK)</a>
+
+    <section class="board" aria-labelledby="board-title">
+      <div class="board-head">
+        <h2 id="board-title">Skor Tablosu</h2>
+        <span id="board-status"></span>
+      </div>
+      <ol id="board-list"></ol>
+      <p id="board-me"></p>
+    </section>
+
+    <footer class="start-foot">
+      <button class="btn link" id="open-settings">Ayarlar</button>
+      <small>Sanal para, gerçek para değildir.</small>
+    </footer>
+  </section>
+
+  <section id="game" class="screen">
+    <div class="topbar">
+      <button class="btn icon" id="back" aria-label="Ana ekran">‹</button>
+      <div class="stat"><span>Para</span><strong id="money">500</strong></div>
+      <div class="stat right"><span>Rekor</span><strong id="best">500</strong></div>
+      <button class="btn icon" id="open-settings-2" aria-label="Ayarlar">⚙</button>
+    </div>
+
+    <div id="table">
+      <div class="felt" aria-hidden="true">
+        <svg viewBox="0 0 400 120" class="arc">
+          <path id="arc-a" d="M20 96Q200 8 380 96" fill="none"/>
+          <text><textPath href="#arc-a" startOffset="50%" text-anchor="middle">BLACKJACK 3:2 ÖDER</textPath></text>
+          <path id="arc-b" d="M46 118Q200 40 354 118" fill="none"/>
+          <text class="small"><textPath href="#arc-b" startOffset="50%" text-anchor="middle">KRUPİYE 17'DE DURUR · SİGORTA 2:1</textPath></text>
+        </svg>
+      </div>
+      <div id="shoe" aria-hidden="true"><i></i><i></i><i></i></div>
+      <div id="dealer-total" class="total"></div>
+      <div id="bet-spot"><div id="bet-stack"></div><span id="bet-label">BAHİS</span></div>
+      <div id="card-layer"></div>
+      <div id="banner" class="banner" role="status"></div>
+    </div>
+
+    <div id="controls">
+      <div class="panel" id="p-bet">
+        <div id="chips"></div>
+        <div class="row">
+          <button class="btn" id="clear">Temizle</button>
+          <button class="btn" id="rebet">Tekrar Oyna</button>
+          <button class="btn primary" id="deal">Dağıt</button>
+        </div>
+      </div>
+      <div class="panel" id="p-play">
+        <div class="grid">
+          <button class="btn primary" id="hit">Kart Çek</button>
+          <button class="btn primary" id="stand">Dur</button>
+          <button class="btn" id="double">İkiye Katla</button>
+          <button class="btn" id="split">Böl</button>
+        </div>
+      </div>
+      <div class="panel" id="p-insurance">
+        <p class="ask">Krupiyede As var. <b>Sigorta</b> alıyor musun? <span id="ins-cost"></span></p>
+        <div class="row">
+          <button class="btn primary" id="ins-yes">Sigorta Al</button>
+          <button class="btn" id="ins-no">Hayır</button>
+        </div>
+      </div>
+      <div class="panel" id="p-done">
+        <p class="ask" id="summary"></p>
+        <div class="row">
+          <button class="btn" id="new-bet">Yeni Bahis</button>
+          <button class="btn primary" id="again">Tekrar Oyna</button>
+        </div>
+      </div>
+      <small class="legal">Sanal para, gerçek para değildir.</small>
+    </div>
+  </section>
+
+  <canvas id="sparks" aria-hidden="true"></canvas>
+
+  <div class="modal" id="settings" role="dialog" aria-modal="true" aria-labelledby="settings-title">
+    <div class="sheet">
+      <h2 id="settings-title">Ayarlar</h2>
+      <label class="switch"><span>Ses</span><input type="checkbox" id="set-sound"><i></i></label>
+      <label class="switch"><span>Titreşim</span><input type="checkbox" id="set-vibrate"><i></i></label>
+      <label class="switch"><span>Animasyonları hızlandır</span><input type="checkbox" id="set-fast"><i></i></label>
+      <details>
+        <summary>Kurallar</summary>
+        <ul>
+          <li>6 deste, %25 kalınca karıştırılır.</li>
+          <li>Krupiye tüm 17'lerde durur, 16 ve altında çeker.</li>
+          <li>Blackjack 3:2, sigorta 2:1, kazanç 1:1 öder.</li>
+          <li>İkiye Katla yalnızca ilk iki kartta ve bölünen ellerde yapılır.</li>
+          <li>Bir kez bölünür. Bölünen Aslara tek kart verilir. Bölünen elde 21 blackjack sayılmaz.</li>
+        </ul>
+      </details>
+      <button class="btn primary" id="close-settings">Tamam</button>
+      <small id="version"></small>
+    </div>
+  </div>
+
+  <div class="modal" id="bankrupt" role="alertdialog" aria-modal="true" aria-labelledby="bankrupt-title">
+    <div class="sheet center">
+      <h2 id="bankrupt-title" class="broke">İflas</h2>
+      <p>Masada para kalmadı. Rekorun silinmez.</p>
+      <p class="record">Rekorun: <b id="bankrupt-best"></b></p>
+      <button class="btn primary" id="restart">500 ile Yeniden Başla</button>
+    </div>
+  </div>
+</main>
+<script type="module" src="js/main.js"></script>
+</body>
+</html>

@@ -1,0 +1,16 @@
+{
+  "appId": "com.caglarsaglam.tamtokatlik21",
+  "appName": "Tam Tokatlık 21",
+  "webDir": "www",
+  "backgroundColor": "#0b0606",
+  "android": {
+    "allowMixedContent": false,
+    "webContentsDebuggingEnabled": false
+  },
+  "plugins": {
+    "SystemBars": {
+      "style": "DARK",
+      "insetsHandling": "css"
+    }
+  }
+}

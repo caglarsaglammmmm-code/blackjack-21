@@ -11,7 +11,8 @@
     "brand": "node tools/apply-brand.mjs",
     "vendor": "node tools/build-vendor.mjs",
     "stamp": "node tools/stamp-sw.mjs",
-    "android:build": "node tools/build-apk.mjs"
+    "android:build": "node tools/build-apk.mjs",
+    "test:score": "node tools/run-emulator.mjs"
   },
   "dependencies": {
     "@capacitor/android": "^8.6.0",
