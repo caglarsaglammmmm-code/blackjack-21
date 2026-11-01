@@ -1,5 +1,5 @@
 // Çevrimdışı oyun için önbellek. Liste ve sürüm `npm run stamp` ile üretilir.
-const CACHE = 'tokatlik-8e791b89d2fc';
+const CACHE = 'tokatlik-2b685b2e7575';
 const ASSETS = [
   './',
   'css/style.css',

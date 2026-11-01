@@ -339,6 +339,11 @@ board.connect();
 if (game.bankrupt) openBankrupt();
 
 if ('serviceWorker' in navigator && !native && location.protocol === 'https:') {
+  // Yeni sürüm hazır olunca bir kez yenilenir; el kayıtlı olduğundan oyun kaybolmaz.
+  const updating = Boolean(navigator.serviceWorker.controller);
+  navigator.serviceWorker.addEventListener('controllerchange', () => {
+    if (updating) location.reload();
+  });
   navigator.serviceWorker.register('sw.js').catch(() => {});
 }
 

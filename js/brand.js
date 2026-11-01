@@ -6,7 +6,7 @@ export const BRAND = {
   shortName: 'Tokatlık 21',
 };
 
-export const VERSION = '1.0.0';
+export const VERSION = '1.0.1';
 
 export const REPO = {
   owner: 'caglarsaglammmmm-code',

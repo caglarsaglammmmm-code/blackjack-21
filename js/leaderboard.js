@@ -5,6 +5,7 @@ import { nextStep } from './score-core.js';
 
 const WRITE_GAP = 1200; // Kuraldaki 1 saniyelik yazma aralığına uyar.
 const RETRY = 5000;
+const SLOW_RETRY = 20000; // Kurulum eksikse sunucuyu sık yormadan yeniden dener.
 const emulatorMode = new URLSearchParams(location.search).has('emu');
 
 export class Leaderboard {
@@ -54,37 +55,52 @@ export class Leaderboard {
       this.startPromise = null;
       this.fb = null;
       this.setStatus('offline');
-      setTimeout(() => this.connect(), RETRY);
+      setTimeout(() => this.connect(), SLOW_RETRY);
     });
   }
 
   async boot() {
     const fb = await import('./vendor/firebase.js');
-    fb.setLogLevel('silent');
-    const app = fb.initializeApp(firebaseConfig ?? { apiKey: 'demo', projectId: 'demo-tokatlik', appId: 'demo' });
-    const auth = fb.initializeAuth(app, {
-      persistence: [fb.indexedDBLocalPersistence, fb.browserLocalPersistence, fb.inMemoryPersistence],
-    });
-    const db = fb.getFirestore(app);
-    if (emulatorMode) {
-      fb.connectAuthEmulator(auth, 'http://127.0.0.1:9099', { disableWarnings: true });
-      fb.connectFirestoreEmulator(db, '127.0.0.1', 8180);
+    if (!this.auth) {
+      fb.setLogLevel('silent');
+      const app = fb.initializeApp(emulatorMode
+        ? { apiKey: 'demo', projectId: 'demo-tokatlik', appId: 'demo' }
+        : firebaseConfig);
+      this.auth = fb.initializeAuth(app, {
+        persistence: [fb.indexedDBLocalPersistence, fb.browserLocalPersistence, fb.inMemoryPersistence],
+      });
+      this.db = fb.getFirestore(app);
+      if (emulatorMode) {
+        fb.connectAuthEmulator(this.auth, 'http://127.0.0.1:9099', { disableWarnings: true });
+        fb.connectFirestoreEmulator(this.db, '127.0.0.1', 8180);
+      }
     }
+    const { auth, db } = this;
     await auth.authStateReady();
     const user = auth.currentUser ?? (await fb.signInAnonymously(auth)).user;
     this.uid = user.uid;
     this.fb = fb;
-    this.db = db;
     this.scores = fb.collection(db, 'scores');
     this.mine = fb.doc(this.scores, user.uid);
     this.watch();
     await this.flush();
   }
 
+  // Kurallar sonradan yayınlanırsa dinleyiciler kendiliğinden yeniden açılır.
+  listenFailed() {
+    this.setStatus('offline');
+    if (this.rewatch) return;
+    for (const stop of this.listeners ?? []) stop();
+    this.rewatch = setTimeout(() => {
+      this.rewatch = 0;
+      this.watch();
+    }, SLOW_RETRY);
+  }
+
   watch() {
     const { fb } = this;
     const top = fb.query(this.scores, fb.orderBy('best', 'desc'), fb.limit(10));
-    fb.onSnapshot(top, { includeMetadataChanges: true }, (snapshot) => {
+    const stopTop = fb.onSnapshot(top, { includeMetadataChanges: true }, (snapshot) => {
       const fromCache = snapshot.metadata.fromCache;
       if (fromCache && !navigator.onLine) {
         this.setStatus('offline');
@@ -96,12 +112,13 @@ export class Leaderboard {
       this.emit();
       this.refreshRank();
       this.flush();
-    }, () => this.setStatus('offline'));
-    fb.onSnapshot(this.mine, (snapshot) => {
+    }, () => this.listenFailed());
+    const stopMine = fb.onSnapshot(this.mine, (snapshot) => {
       this.server = snapshot.exists() ? snapshot.data() : null;
       this.refreshRank();
       this.flush();
-    }, () => {});
+    }, () => this.listenFailed());
+    this.listeners = [stopTop, stopMine];
   }
 
   // Oyuncu ilk 10'da değilse sırasını ayrıca sayar.
